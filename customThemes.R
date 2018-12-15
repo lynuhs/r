@@ -10,7 +10,6 @@ lynuhs_theme <- function(){
     theme(panel.border = element_blank()) +
     theme(panel.grid = element_line(colour = lineCol, linetype = "dotted")) +
     theme(panel.grid.major.x = element_line(linetype = 0)) +
-    theme()
     theme(strip.background = element_blank()) +
     theme(strip.text = element_text(size = 14, color = "black", face = "bold")) +
     theme(legend.key = element_blank()) +
