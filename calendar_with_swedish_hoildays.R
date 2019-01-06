@@ -1,6 +1,8 @@
 # WEB SCRAPING
 #install.packages('rvest')
+#install.packages('lubridate')
 library(rvest)
+library(lubridate)
 Sys.setlocale(category = "LC_TIME", locale = "English_US")
 
 getHolidays <- function (years) {
@@ -63,12 +65,18 @@ createCalendar <- function(startDate = "2018-01-01", endDate = "2030-12-31"){
   calendar$month_name <- format(calendar$date, '%B')
   calendar$month_name_short <- format(calendar$date, '%b')
   calendar$month_no <- format(calendar$date, '%m')
+  calendar$month <- paste0(calendar$month_no, ' ', calendar$month_name_short)
   calendar$month_period <- paste0(calendar$year, calendar$month_no)
   calendar$day <- format(calendar$date, '%d')
-  calendar$week_no_sun <- format(calendar$date+1, '%W') ## NEEDSTO BE CHANGED TO AVOID 00
-  calendar$week_no_mon <- format(calendar$date, '%W')
-  calendar$weekday <- format(calendar$date, '%A')
+  calendar$week_no_sun <- lubridate::isoweek(calendar$date+1)
+  calendar$week_no_sun <- ifelse(calendar$week_no_sun < 10, paste0('0'), as.character(calendar$week_no_sun))
+  calendar$week_no_mon <- lubridate::isoweek(calendar$date)
+  calendar$week_no_mon <- ifelse(calendar$week_no_mon < 10, paste0('0'), as.character(calendar$week_no_mon))
+  calendar$weekday_long <- format(calendar$date, '%A')
   calendar$weekday_short <- format(calendar$date, '%a')
+  calendar$weekday_sun <- paste0(as.integer(format(calendar$date, '%w'))+1, ' ', calendar$weekday_short)
+  calendar$weekday_mon <- paste0(as.integer(format(calendar$date-1, '%w'))+1, ' ', calendar$weekday_short)
+  
   
   holidayTable <- getHolidays(unique(calendar$year))
   calendar <- merge(calendar, holidayTable, by = 'date', all.x = TRUE)
@@ -97,6 +105,5 @@ createCalendar <- function(startDate = "2018-01-01", endDate = "2030-12-31"){
 
   return (calendar)
 }
-
 
 calendar <- createCalendar()
