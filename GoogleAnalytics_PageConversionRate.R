@@ -33,7 +33,7 @@ gaGetData <- function(id, start, end, dimensions, metrics, dimensionFilter="not 
   if(segment == "All Users"){
     seg <- segment_ga4("All Users", "gaid::-1")
   } else {
-    seg <- segment_ga4("All Users", segment)
+    seg <- segment_ga4("Custom Segment", segment)
   }
   
   df <- google_analytics(id,
