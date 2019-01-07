@@ -52,7 +52,7 @@ gaGetData <- function(id, start, end, dimensions, metrics, dimensionFilter="not 
 # for both all users and only for those who have made a transaction and then calculates the conversion rate based on viewed page
 gaCalculatePageCR <- function(id, start, end, pages = "ALL"){
   # COLLECT ALL PAGEVIEWS
-  if (pages == "ALL"){
+  if (pages[1] == "ALL"){
     pages <- ".*"
   } else {
     pages <- paste0("^", paste(pages, collapse = "$|^"), "$")
