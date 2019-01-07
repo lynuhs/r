@@ -1,3 +1,7 @@
+# Created by Linus Larsson
+# 2018-12-12
+# https://lynuhs.com
+
 #install.packages("gtrendsR")
 library(gtrendsR)
 library(ggplot2)
