@@ -45,12 +45,6 @@ gaGetData <- function(id, start, end, dimensions, metrics, dimensionFilter="not 
                          max = -1,
                          anti_sample = TRUE)
   
-  if(is.null(df)){
-    df <- data.frame(matrix(ncol = (length(dimensions)+(length(metrics))), nrow = 1))
-    colnames(df) <- c(dimensions,metrics)
-    df <- NA
-  }
-  
   return (df)
 }
 
