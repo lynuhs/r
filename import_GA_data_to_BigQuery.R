@@ -59,27 +59,45 @@ bq_global_dataset("DATASET_ID")
 # Put your Google Analytics View ID here
 ga_id <- "XXXXXXXXXX" 
 
+# Name the Table you want to create and send data to in BigQuery.
+tableName <- "ga_import"
+
 ###################################################################################
 
 
-
-# Enter the dimensions and metrics you want to use in the data upload
+# Enter the dimensions and metrics you want to use in the data upload. YOU HAVE TO USE DATE!
 dimensions <- c("date", "dimension1","source", "medium", "deviceCategory")
 metrics <- c("sessions","transactions","pageviews","uniquePageviews","bounces","itemQuantity")
 
 
-ga <- gaGetData(id = ga_id,
-                start = Sys.Date()-30,
-                end = Sys.Date()-1,
-                dimensions = dimensions,
-                metrics = metrics)
+# Set the date to import from by checking the last date in the table if it exists
+if(tableName %in% bqr_list_tables()$tableId){
+  start <- as.Date(bqr_query(query =  paste0("SELECT max(date) as date FROM ",tableName))[1,1])+1
+  if(start < Sys.Date()-1){
+    runScript <- TRUE
+  } else {
+    runScript <- FALSE
+  }
+} else {
+  start <- Sys.Date()-30
+  runScript <- TRUE
+}
 
-# Name the Table you want to create and send data to in BigQuery.
-tableName <- "ga_import"
-
-# If the table has already been created this function will not try to create another one. 
-# Use the timePartitioning = TRUE if you have date as a dimension!
-bqr_create_table(tableId = tableName, template_data = ga, timePartitioning = TRUE)
-
-# Run this to append your data frame to the table. 
-bqr_upload_data(upload_data = ga, tableId = tableName, overwrite = FALSE)
+if(runScript){
+  ga <- gaGetData(id = ga_id,
+                  start = start,
+                  end = Sys.Date()-1,
+                  dimensions = dimensions,
+                  metrics = metrics)
+  
+  
+  
+  # If the table has already been created this function will not try to create another one. 
+  bqr_create_table(tableId = tableName, template_data = ga, timePartitioning = TRUE)
+  
+  # Run this to append your data frame to the table. 
+  bqr_upload_data(upload_data = ga, tableId = tableName, overwrite = FALSE)
+} else {
+  cat("\014")
+  print("Table is already up to date!")
+}
