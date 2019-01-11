@@ -22,28 +22,16 @@ start <- "2018-11-11"
 end <- "2018-12-22"
 
 # A function to collect data from GA and exporting as a data frame
-gaGetData <- function(id, start, end, dimensions, metrics, dimensionFilter="not set", segment = "All Users"){
-  if(!(is.list(dimensionFilter))){
-    df <- dim_filter(dimensions[1], "REGEXP",".*")
-    fc <- filter_clause_ga4(list(df), operator = "OR")
-  } else {
-    fc <- dimensionFilter
-  }
-  
-  if(segment == "All Users"){
-    seg <- segment_ga4("All Users", "gaid::-1")
-  } else {
-    seg <- segment_ga4("Custom Segment", segment)
-  }
-  
+gaGetData <- function(id, start, end, dimensions, metrics, filter="ga:pagePath=~.*", segment = "gaid::-1"){
   df <- google_analytics(id,
-                         date_range = c(start,end),
+                         start = start,
+                         end = end,
                          metrics = metrics,
                          dimensions = dimensions,
-                         dim_filters = fc,
-                         segments = seg,
+                         filters = filter,
+                         segment = segment,
                          samplingLevel = "WALK",
-                         max_results = -1)
+                         max_results = 999999999999)
   
   return (df)
 }
@@ -53,20 +41,16 @@ gaGetData <- function(id, start, end, dimensions, metrics, dimensionFilter="not 
 gaCalculatePageCR <- function(id, start, end, pages = "ALL"){
   # COLLECT ALL PAGEVIEWS
   if (pages[1] == "ALL"){
-    pages <- ".*"
+    pages <- "ga:pagePath=~.*"
   } else {
-    pages <- paste0("^", paste(pages, collapse = "$|^"), "$")
+    pages <- paste0("ga:pagePath=~^", paste(pages, collapse = "$|^"), "$")
   }
   
-  dimf <- dim_filter("pagePath","REGEXP",pages)
-  fc <- filter_clause_ga4(list(dimf), operator = "AND")
   
-  all <- gaGetData(id, start, end, c("date","pagePath"), c("uniquePageviews"), fc)
-  con <- gaGetData(id, start, end, c("date","pagePath"), c("uniquePageviews"), fc, "gaid::-10")
+  all <- gaGetData(id, start, end, c("date","pagePath"), c("uniquePageviews"), pages)
+  con <- gaGetData(id, start, end, c("date","pagePath"), c("uniquePageviews"), pages, "gaid::-10")
   
-  all <- all[,colnames(all) != "segment"]
   colnames(all) <- c("date","pagePath","uniquePageviews_all")
-  con <- con[,colnames(con) != "segment"]
   colnames(con) <- c("date","pagePath","uniquePageviews_customers")
   
   data <- merge(all, con, by = c("date","pagePath"), all.x = TRUE)
