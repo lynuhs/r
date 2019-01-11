@@ -42,8 +42,8 @@ gaGetData <- function(id, start, end, dimensions, metrics, dimensionFilter="not 
                          dimensions = dimensions,
                          dim_filters = fc,
                          segments = seg,
-                         max = -1,
-                         anti_sample = TRUE)
+                         samplingLevel = "WALK",
+                         max_results = -1)
   
   return (df)
 }
