@@ -28,16 +28,16 @@ alsoBoughtTable <- function(id, start, end){
   ga <- ga[1:3]
   ga <- subset(ga, !(duplicated(ga[2:3])))
   
-  cross <- matrix(nrow=0, ncol=5)
-  colnames(cross) <- c("date","productSku","alsoBought","uniquePurchases","allReceipts")
+  cross <- matrix(nrow=0, ncol=4)
+  colnames(cross) <- c("date","productSku","alsoBought","transactionId")
   
   dates <- unique(ga$date)
   
   for(d in 1:(length(dates))){
     products <- unique(ga[which(ga$date == dates[d]),'productSku'])
     
-    cr <- matrix(nrow=0, ncol=4)
-    colnames(cr) <- c("productSku","alsoBought","uniquePurchases","allReceipts")
+    cr <- matrix(nrow=0, ncol=3)
+    colnames(cr) <- c("productSku","alsoBought","transactionId")
     
     
     for (i in 1:(length(products))){
@@ -46,15 +46,9 @@ alsoBoughtTable <- function(id, start, end){
       bp <- subset(ga, transactionId %in% receipts & !(productSku == products[i]))
       
       if (nrow(bp) > 0){
-        #bp <- group_by(bp, productSku) %>%
-         # summarise(uniquePurchases = n_distinct(transactionId)) %>%
-          #as.data.frame()
-        
         bp <- data.frame(productSku = products[i],
                          alsoBought = bp$productSku,
                          transactionId = bp$transactionId)
-                         #uniquePurchases = bp$uniquePurchases,
-                         #allReceipts = length(receipts))
         cr <- rbind(cr, bp)
       } 
       
