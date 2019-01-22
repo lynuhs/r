@@ -1,5 +1,5 @@
 # Created by Linus Larsson
-# 2019-01-07
+# 2019-01-22
 # https://lynuhs.com
 
 alsoBought <- function(id, start, end){
