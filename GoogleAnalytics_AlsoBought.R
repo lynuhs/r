@@ -51,7 +51,8 @@ alsoBoughtTable <- function(id, start, end){
   ga <- ga[1:3]
   ga <- subset(ga, !(duplicated(ga[2:3])))
   
-  # If you decide to use BigQuery instead then you use the following instead of Google Analytics above
+  # If you decide to use BigQuery instead then you use the following instead of Google Analytics above.
+  # In that case id in the function parameters should be set to dataset ID instead of GA ID
   # ga <- bqr_query(useLegacySql = FALSE, query = paste0("
   #   SELECT
   #     DISTINCT *
@@ -61,7 +62,7 @@ alsoBoughtTable <- function(id, start, end){
   #         hit.transaction.transactionId AS transactionId,
   #         pro.productSku AS productSku
   #        FROM
-  #         `PROJECT_ID.DATASET_ID.ga_sessions_20*` ga, # Replace with your own IDs
+  #         `PROJECT_ID.", id, ".ga_sessions_20*` ga, # Replace with your own IDs
   #         UNNEST(ga.hits) hit,
   #         UNNEST(hit.product) pro
   #         WHERE
