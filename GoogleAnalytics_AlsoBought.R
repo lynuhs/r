@@ -52,7 +52,7 @@ alsoBoughtTable <- function(id, start, end){
   ga <- subset(ga, !(duplicated(ga[2:3])))
   
   # If you decide to use BigQuery instead then you use the following instead of Google Analytics above.
-  # In that case id in the function parameters should be set to dataset ID instead of GA ID
+  # In that case id in the function parameters should be set to dataset ID instead of GA ID, although they might be the same!
   # ga <- bqr_query(useLegacySql = FALSE, query = paste0("
   #   SELECT
   #     DISTINCT *
