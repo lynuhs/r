@@ -2,6 +2,15 @@
 # 2019-01-22
 # https://lynuhs.com
 
+#install.packages("googleAnalyticsR")
+#install.packages("googleAuthR")
+#install.packages("dplyr")
+library(googleAnalyticsR)
+library(googleAuthR)
+library(dplyr)
+
+ga_auth()
+
 alsoBought <- function(id, start, end){
   ga <- google_analytics_3(id = id,
               start = start,
@@ -48,3 +57,9 @@ alsoBought <- function(id, start, end){
   
   return (cross)
 }
+
+#Type in your GA View ID
+ga_id <- XXXXXXX    
+
+# Collect data from last 30 days
+df <- alsoBought(ga_id, Sys.Date()-30, Sys.Date()-1)
