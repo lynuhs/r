@@ -94,6 +94,15 @@ calculateReceiptShare <- function(productDf){
   return (share)
 }
 
+# This function will gather the table data for all product SKUs and then calculate the metrics
+alsoBought <- function(id, start, end){
+  ga <- alsoBoughtTable(id, start, end)
+  
+  ga <- calculateReceiptShare(ga)
+  ga <- ga[order(-ga$uniquePurchases),]
+  return (ga)
+}
+
 #######################################################################################
 #  CONSOLE FUNCTIONS                                                                  
 #######################################################################################
