@@ -12,6 +12,29 @@ library(dplyr)
 
 ga_auth()
 
+# If you have lots and lots of products then it might be better to collect the data from BigQuery instead (if you have GA360)
+# You might need to set up credentials for using API via R in that case on https://console.cloud.google.com/apis/credentials/
+#
+# library(bigQueryR)
+#
+# options(googleAuthR.scopes.selected = c("https://www.googleapis.com/auth/bigquery",
+#                                           "https://www.googleapis.com/auth/devstorage.full_control",
+#                                           "https://www.googleapis.com/auth/cloud-platform",
+#                                           "https://www.googleapis.com/auth/analytics",
+#                                           "https://www.googleapis.com/auth/analytics.readonly", 
+#                                           "https://www.googleapis.com/auth/analytics.manage.users.readonly",
+#                                           "https://www.googleapis.com/auth/analytics.edit",
+#                                           "https://www.googleapis.com/auth/analytics.manage.users",
+#                                           "https://www.googleapis.com/auth/analytics.provision"
+#   ))
+#
+# bqr_global_project(YOUR_BQ_PROJECT_ID)
+# bqr_global_dataset(YOUR_BQ_DATASET_ID)
+#  
+# gar_auth()
+
+
+
 # This function will create a data frame containing all unique product SKUs combined with a paired product SKU 
 # that was bought in the same purchase together with a column for transactionID. This makes it possible to calculate
 # valuable metrics from the table. 
@@ -27,6 +50,28 @@ alsoBoughtTable <- function(id, start, end){
   
   ga <- ga[1:3]
   ga <- subset(ga, !(duplicated(ga[2:3])))
+  
+  # If you decide to use BigQuery instead then you use the following instead of Google Analytics above
+  # ga <- bqr_query(useLegacySql = FALSE, query = paste0("
+  #   SELECT
+  #     DISTINCT *
+  #   FROM (
+  #       SELECT
+  #         date,
+  #         hit.transaction.transactionId AS transactionId,
+  #         pro.productSku AS productSku
+  #        FROM
+  #         `PROJECT_ID.DATASET_ID.ga_sessions_20*` ga, # Replace with your own IDs
+  #         UNNEST(ga.hits) hit,
+  #         UNNEST(hit.product) pro
+  #         WHERE
+  #         parse_DATE('%y%m%d',
+  #                    _TABLE_SUFFIX) BETWEEN DATE('",as.character(start),"')
+  #         AND DATE('",as.character(end),"')
+  #         AND pro.productSku IS NOT NULL
+  #         AND hit.transaction.transactionId IS NOT NULL
+  #        )"))
+  
   
   cross <- matrix(nrow=0, ncol=4)
   colnames(cross) <- c("date","productSku","alsoBought","transactionId")
