@@ -89,7 +89,7 @@ alsoBoughtTable <- function(id, start, end){
     for (i in 1:(length(products))){
       receipts <- ga[which(ga$productSku == products[i] & ga$date == dates[d]),'transactionId']
       
-      bp <- subset(ga, transactionId %in% receipts & !(productSku == products[i]))
+      bp <- subset(ga, transactionId %in% receipts)
       bp <- data.frame(productSku = products[i],
                        alsoBought = bp$productSku,
                        transactionId = bp$transactionId)
