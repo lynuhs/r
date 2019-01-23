@@ -90,13 +90,10 @@ alsoBoughtTable <- function(id, start, end){
       receipts <- ga[which(ga$productSku == products[i] & ga$date == dates[d]),'transactionId']
       
       bp <- subset(ga, transactionId %in% receipts & !(productSku == products[i]))
-      
-      if (nrow(bp) > 0){
-        bp <- data.frame(productSku = products[i],
-                         alsoBought = bp$productSku,
-                         transactionId = bp$transactionId)
-        cr <- rbind(cr, bp)
-      } 
+      bp <- data.frame(productSku = products[i],
+                       alsoBought = bp$productSku,
+                       transactionId = bp$transactionId)
+      cr <- rbind(cr, bp)
       
       
       if(i == 1 | i%%10 == 0 | i == length(products)){
