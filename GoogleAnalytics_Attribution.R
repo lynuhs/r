@@ -104,6 +104,23 @@ mcf$date <- as.Date(as.character(mcf$date), '%Y%m%d')
 mcf <-mcf[order(mcf$fullVisitorId, mcf$visitStartTime),]
 mcf <- subset(mcf, !(duplicated(transactionId)) | is.na(transactionId))
 
+# REMOVE SESSIONS THAT DON'T LEAD TO A CONVERSION
+keys <- mcf[which(!(is.na(mcf$transactionId))),c('fullVisitorId','transactionId','visitStartTime')]
+getLastTransaction <- function(keys){
+  df <- group_by(keys, fullVisitorId) %>%
+    summarise(lastTransaction = max(visitStartTime)) %>%
+    as.data.frame()
+  
+  keys <- merge(keys, df, by = "fullVisitorId", all.x = TRUE)
+  return (keys[-3])
+}
+keys <- getLastTransaction(keys)
+
+mcf <- merge(mcf, keys, by = "fullVisitorId", all.x = TRUE)
+mcf <-mcf[order(mcf$fullVisitorId, mcf$visitStartTime),]
+mcf <- subset(mcf, visitStartTime <= lastTransaction)
+
+
 journey <- NULL
 attribution <- NULL
 firstT <- NULL
