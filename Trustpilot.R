@@ -32,7 +32,7 @@ lynuhs_theme <- function(){
     theme(strip.background = element_blank()) +
     theme(strip.text = element_text(size = 14, color = "black", face = "bold")) +
     theme(legend.key = element_blank()) +
-    theme(legend.title = element_blank()) + 
+    theme(legend.background = element_rect(fill = bg)) +
     #theme(axis.text.x = element_text(angle = 30)) +
     theme(plot.title = element_text(margin = unit(c(0.1,0.1,0.1,0.1),"cm"))) +
     theme(plot.subtitle = element_text(margin = unit(c(0,0,1,0),"cm")))
