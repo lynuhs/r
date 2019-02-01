@@ -1,8 +1,8 @@
 # Created by Linus Larsson
 # 2019-02-01
 # https://lynuhs.com
-
 library(rvest)
+library(ggplot2)
 
 trim <- function(str){
   gsub("^\\s+|\\s+$", "", str)
