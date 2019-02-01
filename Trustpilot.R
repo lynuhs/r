@@ -1,5 +1,5 @@
 # Created by Linus Larsson
-# 2019-01-31
+# 2019-02-01
 # https://lynuhs.com
 
 library(rvest)
@@ -7,6 +7,15 @@ library(rvest)
 trim <- function(str){
   gsub("^\\s+|\\s+$", "", str)
 } 
+
+factorToCharacter <- function(df){
+  for (i in 1:ncol(df)){
+    if(is.factor(df[,i])){
+      df[,i] <- as.character(df[,i])
+    }
+  }
+  return(df)
+}
 
 trustpilot <- function(domain){
   url <- paste0("https://www.trustpilot.com/review/", domain, "?languages=all")
@@ -114,6 +123,8 @@ trustpilot <- function(domain){
     ))
     print(paste0(url, "&page=", i, " has been scraped"))
   }
+  
+  reviews <- factorToCharacter(reviews)
   
   return(reviews)
 }
