@@ -146,6 +146,7 @@ trustpilot <- function(domain){
   }
   
   reviews <- factorToCharacter(reviews)
+  reviews$contentLength <- nchar(reviews$content)
   
   return(reviews)
 }
