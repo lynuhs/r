@@ -111,7 +111,7 @@ trustpilot <- function(domain){
     
     haveReply <- html_children(review_card) %>%
       html_text()
-    haveReply <- unlist(gregexpr("Reply from", test, perl=TRUE)) > 0
+    haveReply <- unlist(gregexpr("Reply from", haveReply, perl=TRUE)) > 0
     
     reply <- review_card %>%
       html_nodes(".brand-company-reply__content") %>%
