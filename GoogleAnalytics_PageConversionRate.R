@@ -22,16 +22,20 @@ start <- "2018-11-11"
 end <- "2018-12-22"
 
 # A function to collect data from GA and exporting as a data frame
-gaGetData <- function(id, start, end, dimensions, metrics, filter="ga:pagePath=~.*", segment = "gaid::-1"){
-  df <- google_analytics(id,
-                         start = start,
-                         end = end,
+gaGetData <- function(id, start, end, dimensions, metrics,  dimF="not set", segment = segment_ga4("All Users", segment_id = "gaid::-1")){
+  if(!(is.list(dimF))){
+    dimF <- dim_filter(dimensions[1], "REGEXP",".*")
+    dimF <- filter_clause_ga4(list(dimF), operator = "OR")
+  }
+  
+  df <- google_analytics(viewId = id, 
+                         date_range = c(start,end),
                          metrics = metrics,
                          dimensions = dimensions,
-                         filters = filter,
-                         segment = segment,
-                         samplingLevel = "WALK",
-                         max_results = 999999999999)
+                         dim_filters = dimF,
+                         segments = segment,
+                         anti_sample = TRUE,
+                         max = -1)
   
   return (df)
 }
@@ -41,15 +45,18 @@ gaGetData <- function(id, start, end, dimensions, metrics, filter="ga:pagePath=~
 gaCalculatePageCR <- function(id, start, end, pages = "ALL"){
   # COLLECT ALL PAGEVIEWS
   if (pages[1] == "ALL"){
-    pages <- "ga:pagePath=~.*"
+    pages <- ".*"
   } else {
-    pages <- paste0("ga:pagePath=~^", paste(pages, collapse = "$|^"), "$")
+    pages <- paste0("^", paste(pages, collapse = "$|^"), "$")
   }
   
+  dimf <- dim_filter("pagePath","REGEXP",pages)
+  fc <- filter_clause_ga4(list(dimf), operator = "OR")
+  all <- gaGetData(id, start, end, c("date","pagePath"), c("uniquePageviews"), fc)
+  con <- gaGetData(id, start, end, c("date","pagePath"), c("uniquePageviews"), fc, segment_ga4("Segment",segment_id="gaid::-10"))
   
-  all <- gaGetData(id, start, end, c("date","pagePath"), c("uniquePageviews"), pages)
-  con <- gaGetData(id, start, end, c("date","pagePath"), c("uniquePageviews"), pages, "gaid::-10")
-  
+  all <- all[-3]
+  con <- con[-3]
   colnames(all) <- c("date","pagePath","uniquePageviews_all")
   colnames(con) <- c("date","pagePath","uniquePageviews_customers")
   
@@ -58,3 +65,4 @@ gaCalculatePageCR <- function(id, start, end, pages = "ALL"){
   
   return (data)
 }
+
