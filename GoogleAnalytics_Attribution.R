@@ -1,11 +1,12 @@
 # Created by Linus Larsson
-# 2019-01-31
+# 2019-01-31 (edited 2019-04-04)
 # https://lynuhs.com
 
 library(bigQueryR)
 library(googleCloudStorageR)
 library(googleAuthR)
 library(dplyr)
+library(tidyr)
 
 # Set the relevant scopes
 options(googleAuthR.scopes.selected = 
@@ -17,6 +18,7 @@ bqr_auth()
 bqr_global_project("YOUR-BQ-PROJECT-ID")                      # Replace with your own project ID
 bqr_global_dataset("YOUR-BQ-DATSET-ID")                       # Replace with your own dataset ID to store table
 
+# This query will be used to extract data from Google BigQuery
 query <- "
     SELECT
     CONCAT('id_', CAST(fullvisitorId AS STRING)) AS fullVisitorId,
@@ -76,7 +78,7 @@ query <- "
     visitStartTime
 " 
 
-
+# Since the data will be too large to import directly to R, you will have to store it in a bucket in Google Storage
 bqr_query_asynch(query = query, 
                  destinationTableId = "GA_MCF", 
                  writeDisposition = "WRITE_TRUNCATE", 
@@ -92,19 +94,21 @@ job <- bqr_extract_data(projectId = "YOUR-PROJECT-ID",                # Write yo
 
 bqr_wait_for_job(job)
 
+# Now that the data has been stored you can download it to your project workspace, just make sure to download it as a csv file
 gcs_get_object("GA_MCF.csv", bucket = "YOUR_BUCKET_ID", saveToDisk = "GA_MCF.csv", overwrite = TRUE)    # Write your own ID
 mcf <- read.csv("GA_MCF.csv")
 
+# Replace all factors to characters
 mcf$fullVisitorId <- as.character(mcf$fullVisitorId)
 mcf$transactionId <- as.character(mcf$transactionId)
 mcf$channel <- as.character(mcf$channel)
 mcf$date <- as.Date(as.character(mcf$date), '%Y%m%d')
 
-# REMOVE DUPLICATED TRANSACTIONS
+# Remove duplicated transactions
 mcf <-mcf[order(mcf$fullVisitorId, mcf$visitStartTime),]
 mcf <- subset(mcf, !(duplicated(transactionId)) | is.na(transactionId))
 
-# REMOVE SESSIONS THAT DON'T LEAD TO A CONVERSION
+# Remove sessions that don't lead to a conversion
 keys <- mcf[which(!(is.na(mcf$transactionId))),c('fullVisitorId','transactionId','visitStartTime')]
 getLastTransaction <- function(keys){
   df <- group_by(keys, fullVisitorId) %>%
@@ -117,42 +121,24 @@ getLastTransaction <- function(keys){
 keys <- getLastTransaction(keys)
 
 mcf <- merge(mcf, keys, by = "fullVisitorId", all.x = TRUE)
-mcf <-mcf[order(mcf$fullVisitorId, mcf$visitStartTime),]
 mcf <- subset(mcf, visitStartTime <= lastTransaction)
 
+# Now sort the data frame in ascending order by fullVisitorId and visitStartTime
+mcf <-mcf[order(mcf$fullVisitorId, mcf$visitStartTime),]
 
-journey <- NULL
-attribution <- NULL
-firstT <- NULL
+# Since the data is sorted correctly you can now fill in all NAs in transactionId with the correct one.
+# This will help grouping the data correctly in the next step
+mcf <- mcf %>% fill(transactionId, .direction = "up")
 
-for (n in  1:nrow(mcf)){
-  if (is.null(journey)){
-    firstT <- mcf[n,'date']
-    firstC <- mcf[n,'channel']
-  }
-  journey <- c(journey, mcf[n,'channel'])
-  
-  if (!(is.na(mcf[n,'transactionId']))){
-    attribution  <- rbind(attribution , data.frame(
-                        fullVisitorId = mcf[n,'fullVisitorId'],
-                        transactionId = mcf[n,'transactionId'],
-                        attribution = paste(journey, collapse = ", "),
-                        conversionTouchpoints = length(journey),
-                        firstTouchpointDate = firstT,
-                        lastTouchpointDate = mcf[n,'date'],
-                        acquisitionChannel = firstC,
-                        purchaseChannel = mcf[n,'channel']))
-    journey <- NULL
-  }
-  
-  if(n == 1 | n%%1000 == 0 | n == nrow(mcf)){
-    cat("\014")
-    print(
-      paste0(
-        round(n*100/(nrow(mcf)),0), "% computed"
-      )
-    ) 
-  }
-}
+# Group the data and apply all the relevant columns
+mcf <- group_by(test, fullVisitorId, transactionId) %>%
+          summarise(visitStartTime = min(visitStartTime),
+                    firstTouchpointDate = min(date),
+                    lastTouchpointDate = max(date),
+                    multiChannelFunnel = paste(channel, collapse = ", "),
+                    acqusitionChannel = min(channel),
+                    conversionChannel = max(channel)) %>%
+          as.data.frame()
 
+# Save the data frame as a csv file in your project directory
 write.csv(attribution, "GA_MCF_Calculations.csv", row.names = FALSE)
