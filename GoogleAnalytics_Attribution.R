@@ -136,7 +136,7 @@ mcf <- group_by(mcf, fullVisitorId, transactionId) %>%
                     firstTouchpointDate = min(date),
                     lastTouchpointDate = max(date),
                     multiChannelFunnel = paste(channel, collapse = ", "),
-                    acqusitionChannel = channel[1],
+                    acquisitionChannel = channel[1],
                     conversionChannel = channel[length(channel)],
                     touchpoints = length(channel)) %>%
           as.data.frame()
