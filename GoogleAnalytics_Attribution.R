@@ -136,9 +136,13 @@ mcf <- group_by(mcf, fullVisitorId, transactionId) %>%
                     firstTouchpointDate = min(date),
                     lastTouchpointDate = max(date),
                     multiChannelFunnel = paste(channel, collapse = ", "),
-                    acqusitionChannel = min(channel),
-                    conversionChannel = max(channel)) %>%
+                    acqusitionChannel = channel[1],
+                    conversionChannel = channel[length(channel)],
+                    touchpoints = length(channel)) %>%
           as.data.frame()
+
+# Add the number of days between first and last touchpoint
+mcf$conversionLagDays <- as.numeric(mcf$lastTouchpointDate - mcf$firstTouchpointDate, units = "days")
 
 # Save the data frame as a csv file in your project directory
 write.csv(mcf, "GA_MCF_Calculations.csv", row.names = FALSE)
