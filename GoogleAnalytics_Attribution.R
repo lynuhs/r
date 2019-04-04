@@ -124,14 +124,14 @@ mcf <- merge(mcf, keys, by = "fullVisitorId", all.x = TRUE)
 mcf <- subset(mcf, visitStartTime <= lastTransaction)
 
 # Now sort the data frame in ascending order by fullVisitorId and visitStartTime
-mcf <-mcf[order(mcf$fullVisitorId, mcf$visitStartTime),]
+mcf <- mcf[order(mcf$fullVisitorId, mcf$visitStartTime),]
 
 # Since the data is sorted correctly you can now fill in all NAs in transactionId with the correct one.
 # This will help grouping the data correctly in the next step
 mcf <- mcf %>% fill(transactionId, .direction = "up")
 
 # Group the data and apply all the relevant columns
-mcf <- group_by(test, fullVisitorId, transactionId) %>%
+mcf <- group_by(mcf, fullVisitorId, transactionId) %>%
           summarise(visitStartTime = min(visitStartTime),
                     firstTouchpointDate = min(date),
                     lastTouchpointDate = max(date),
@@ -141,4 +141,4 @@ mcf <- group_by(test, fullVisitorId, transactionId) %>%
           as.data.frame()
 
 # Save the data frame as a csv file in your project directory
-write.csv(attribution, "GA_MCF_Calculations.csv", row.names = FALSE)
+write.csv(mcf, "GA_MCF_Calculations.csv", row.names = FALSE)
