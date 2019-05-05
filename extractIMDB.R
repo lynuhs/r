@@ -22,7 +22,7 @@ imdbToBQConnector <- function(fileName, colTypes = NULL){
       file = gzfile(filePath), progress = TRUE, na = "\\N", col_types = colTypes, quote = "",
     )
   )
-  file.remove(filePath, gsub(".gz","",filePath))
+  file.remove(filePath)
   
   # Remove all citation marks from the character columns
   for(c in 1:ncol(data)){
