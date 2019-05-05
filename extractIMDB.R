@@ -3,6 +3,7 @@ library(googleCloudStorageR)
 
 gcs_auth()
 
+# Type in the bucket you want to send data to in Google Cloud Storage
 bucket_name <- ""
 
 
