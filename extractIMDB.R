@@ -50,7 +50,7 @@ imdbToBQConnector <- function(fileName, colTypes = NULL){
 
 imdbToBQConnector("name.basics")
 imdbToBQConnector("title.akas")
-imdbToBQConnector("title.basics")
+imdbToBQConnector("title.basics", c("cccciiinc"))
 imdbToBQConnector("title.crew")
 imdbToBQConnector("title.episode")
 imdbToBQConnector("title.principals")
