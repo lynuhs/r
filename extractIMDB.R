@@ -7,7 +7,7 @@ gcs_auth()
 bucket_name <- ""
 
 
-imdbToBQConnector <- function(fileName){
+imdbToBQConnector <- function(fileName, colTypes = NULL){
   # Use the parameter fileName to create the correct download URL from IMDB
   url <- paste0("https://datasets.imdbws.com/",fileName,".tsv.gz")
   
@@ -15,14 +15,21 @@ imdbToBQConnector <- function(fileName){
   filePath <- paste0("data/",gsub("\\.","_",fileName),".tsv.gz")
   GET(url, write_disk(filePath, overwrite = TRUE))
   
+  
   # Read the downloaded file. Notice that it's tab separated and that we are identifying NAs.
   data <- as.data.frame(
     readr::read_tsv(
-      file = gzfile(filePath), progress = TRUE, na = "\\N"
+      file = gzfile(filePath), progress = TRUE, na = "\\N", col_types = colTypes, quote = "",
     )
   )
-  file.remove(filePath)
+  file.remove(filePath, gsub(".gz","",filePath))
   
+  # Remove all citation marks from the character columns
+  for(c in 1:ncol(data)){
+    if(is.character(data[,c])){
+      data[,c] <- gsub("\"", "", data[,c])
+    }
+  }
   
   # Replace all NA values with empty strings. This make it to null in Google Cloud.
   data[is.na(data)] <- ""
@@ -33,7 +40,7 @@ imdbToBQConnector <- function(fileName){
   
   # Write a csv file in the data folder
   cloudName <- paste0(gsub("\\.","_",fileName),".csv")
-  write.csv(data, paste0("data/",cloudName), row.names = FALSE)
+  write.csv(data, paste0("data/",cloudName), row.names = FALSE, quote = TRUE)
   rm(data)
   
   # Upload the csv file to Google Cloud Storage
