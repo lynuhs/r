@@ -42,7 +42,7 @@ imdbToBQConnector <- function(fileName, colTypes = NULL){
   # Upload the csv file to Google Cloud Storage
   gcs_upload(file = paste0("data/",cloudName), bucket = bucket_name, name = cloudName)
   file.remove(paste0("data/",cloudName))
-  cat(crayon::red(paste0(fileName, " uploaded successfully to BigQuery")))
+  cat(crayon::red(paste0(fileName, " uploaded successfully to Google Cloud Storage")))
 }
 
 imdbToBQConnector("name.basics", c("cciicc"))
