@@ -34,10 +34,6 @@ imdbToBQConnector <- function(fileName, colTypes = NULL){
   # Replace all NA values with empty strings. This make it to null in Google Cloud.
   data[is.na(data)] <- ""
   
-  # Remove columns that you don't need
-  data <- data[!(colnames(data) %in% c("knownForTitles"))]
-  
-  
   # Write a csv file in the data folder
   cloudName <- paste0(gsub("\\.","_",fileName),".csv")
   write.csv(data, paste0("data/",cloudName), row.names = FALSE, quote = TRUE)
@@ -49,7 +45,7 @@ imdbToBQConnector <- function(fileName, colTypes = NULL){
   cat(crayon::red(paste0(fileName, " uploaded successfully to BigQuery")))
 }
 
-imdbToBQConnector("name.basics", c("cciic"))
+imdbToBQConnector("name.basics", c("cciicc"))
 imdbToBQConnector("title.akas", c("ciccccci"))
 imdbToBQConnector("title.basics", c("cccciiinc"))
 imdbToBQConnector("title.crew", c("ccc"))
